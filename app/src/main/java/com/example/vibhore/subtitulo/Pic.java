@@ -177,7 +177,7 @@ public class Pic extends AppCompatActivity{
                     }
                     result+=" ";
                 }
-                etext.setText(result);
+                //etext.setText(result);
                 Log.e("result:",result);
                 String delims = "[ ,:+]+";
                 String[] tokens = result.split(delims);
