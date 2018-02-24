@@ -1,6 +1,7 @@
 package com.example.vibhore.subtitulo;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,13 +30,14 @@ public class Pic extends AppCompatActivity{
     Button takePictureButton;
     ImageView imageView;
     Uri file;
+    final int pic_crop=2;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pic);
 
         takePictureButton = (Button) findViewById(R.id.button_image);
-        imageView = (ImageView) findViewById(R.id.imageview);
-        Button captionImageButton=(Button)findViewById(R.id.caption_image);
+        imageView=(ImageView)findViewById(R.id.imageview);
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             takePictureButton.setEnabled(false);
@@ -54,20 +57,26 @@ public class Pic extends AppCompatActivity{
         file = Uri.fromFile(getOutputMediaFile());
         intent.putExtra(MediaStore.EXTRA_OUTPUT, file);
 
-        startActivityForResult(intent, 100);
+        startActivityForResult(intent,100);
     }
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 100) {
-            if (resultCode == RESULT_OK) {
-                imageView.setImageURI(file);
-                try {
+        if (resultCode == RESULT_OK) {
+            if (requestCode==100) {
+                //file=data.getData();
+                performcrop();}
+                else if(requestCode==pic_crop) {
+                Bundle extras=data.getExtras();
+                Bitmap thePic=extras.getParcelable("data");
+                imageView.setImageBitmap(thePic);
+            }
+                /*try {
                     Bitmap bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(),file);
                 } catch (IOException e) {
                     e.printStackTrace();
-                }
+                }*/
+
             }
         }
-    }
     private static File getOutputMediaFile(){
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "CameraDemo");
@@ -82,4 +91,26 @@ public class Pic extends AppCompatActivity{
         return new File(mediaStorageDir.getPath() + File.separator +
                 "IMG_"+ timeStamp + ".jpg");
     }
+    //crop image
+    private void performcrop(){
+        try {
+            Intent cropIntent = new Intent("com.android.camera.action.CROP");
+            cropIntent.setDataAndType(file, "image/*");
+            cropIntent.putExtra("crop", "true");
+            cropIntent.putExtra("aspectX", 1);
+            cropIntent.putExtra("aspectY", 1);
+            cropIntent.putExtra("outputX", 256);
+            cropIntent.putExtra("outputY", 256);
+            cropIntent.putExtra("return-data", true);
+           startActivityForResult(cropIntent,pic_crop);
+            //imageView.setImageURI(file);
+        }
+        catch(ActivityNotFoundException anfe){
+            //display an error message
+            String errorMessage = "Whoops - your device doesn't support the crop action!";
+            Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    }
+
 }
