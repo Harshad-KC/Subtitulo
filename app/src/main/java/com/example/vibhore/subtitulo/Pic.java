@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -48,6 +49,11 @@ public class Pic extends AppCompatActivity{
     Uri file;
     TextView etext ;
     Bitmap thePic;
+    EditText emailAddress;
+    EditText phoneNumber;
+    EditText fullName;
+    Intent intent1=new Intent(ContactsContract.Intents.Insert.ACTION);
+
     private VisionServiceClient client ;
     final int pic_crop=2;
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +154,10 @@ public class Pic extends AppCompatActivity{
         protected void onPostExecute(String data)
         {
             super.onPostExecute(data);
-
+            String email=null;
+            int flag=0;
+            String phone=null;
+            String name=null;
             if(e!=null){
                 etext.setText("Error:"+e.getMessage());
                 this.e=null ;
@@ -170,8 +179,7 @@ public class Pic extends AppCompatActivity{
                 }
                 etext.setText(result);
                 Log.e("result:",result);
-                String delims = "[ ,:]+";
-                String name = null;
+                String delims = "[ ,:+]+";
                 String[] tokens = result.split(delims);
                 for (int i = 0; i < tokens.length; i++)
                     System.out.println(tokens[i]);
@@ -185,9 +193,8 @@ public class Pic extends AppCompatActivity{
                     Log.e("result","Coming here");
                     name=tokens[0] +" " +tokens[1];
                 }
-                String email=null;
-                int flag=0;
-                String phone=null;
+
+
                 for(int i=0;i<tokens.length;i++){
                     for(int j=0;j<tokens[i].length();j++){
                         if(tokens[i].charAt(j)=='@'){
@@ -205,6 +212,16 @@ public class Pic extends AppCompatActivity{
                 Log.e("result",name + " " + phone + " " + email);
 
             }
+            intent1.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+            //emailAddress.setText(email);
+            //phoneNumber.setText(phone);
+            //fullName.setText(name);
+            intent1.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
+            intent1.putExtra(ContactsContract.Intents.Insert.PHONE,phone);
+            intent1.putExtra(ContactsContract.Intents.Insert.NAME,name);
+            startActivity(intent1);
+
+
         }
 
     }
