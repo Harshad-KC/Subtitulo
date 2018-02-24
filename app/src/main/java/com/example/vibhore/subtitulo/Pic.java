@@ -3,6 +3,7 @@ package com.example.vibhore.subtitulo;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -32,6 +34,7 @@ public class Pic extends AppCompatActivity{
 
         takePictureButton = (Button) findViewById(R.id.button_image);
         imageView = (ImageView) findViewById(R.id.imageview);
+        Button captionImageButton=(Button)findViewById(R.id.caption_image);
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             takePictureButton.setEnabled(false);
@@ -57,6 +60,11 @@ public class Pic extends AppCompatActivity{
         if (requestCode == 100) {
             if (resultCode == RESULT_OK) {
                 imageView.setImageURI(file);
+                try {
+                    Bitmap bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(),file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
