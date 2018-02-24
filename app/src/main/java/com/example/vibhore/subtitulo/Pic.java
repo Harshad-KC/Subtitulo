@@ -164,11 +164,46 @@ public class Pic extends AppCompatActivity{
                         for(Word word: line.words){
                             result+=word.text+ " ";
                         }
-                        result+="\n";
+                        result+=" ";
                     }
-                    result+="\n";
+                    result+=" ";
                 }
                 etext.setText(result);
+                Log.e("result:",result);
+                String delims = "[ ,:]+";
+                String name = null;
+                String[] tokens = result.split(delims);
+                for (int i = 0; i < tokens.length; i++)
+                    System.out.println(tokens[i]);
+                if(tokens[0].equals("Dr.")||tokens[0].equals("Mr.")||tokens[0].equals("Mrs.")||tokens[0].equals("Ms."))
+                {
+                    Log.e("result","Coming here1");
+                    name=tokens[1] +" " +tokens[2];
+                }
+                 else
+                {
+                    Log.e("result","Coming here");
+                    name=tokens[0] +" " +tokens[1];
+                }
+                String email=null;
+                int flag=0;
+                String phone=null;
+                for(int i=0;i<tokens.length;i++){
+                    for(int j=0;j<tokens[i].length();j++){
+                        if(tokens[i].charAt(j)=='@'){
+                            email=tokens[i];
+                            break;
+                        }
+                        if((tokens[i].matches("[0-9|-]+") && tokens[i].length()>=8)){
+
+                            phone=tokens[i];
+                            break;
+
+                        }
+                    }
+                }
+                Log.e("result",name + " " + phone + " " + email);
+
             }
         }
 
