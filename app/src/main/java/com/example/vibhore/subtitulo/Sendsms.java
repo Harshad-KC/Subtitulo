@@ -56,6 +56,7 @@ public class Sendsms extends AppCompatActivity{
     String name[]=new String[3] ;
     Button takePictureButton;
     ImageView imageView;
+    EditText edit_name ;
     Uri file;
     TextView etext ;
     Bitmap thePic;
@@ -81,6 +82,7 @@ public class Sendsms extends AppCompatActivity{
         takePictureButton = (Button) findViewById(R.id.button_image);
         imageView=(ImageView)findViewById(R.id.imageview);
         etext=(TextView) findViewById(R.id.eText);
+        edit_name=(EditText)findViewById(R.id.edit_name);
 
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -134,7 +136,7 @@ public class Sendsms extends AppCompatActivity{
     }
 
     public void doRecognize(){
-        etext.setText("Analyzing");
+        //etext.setText("Analyzing");
         Log.e("resul","res");
         try{
             new DoRequest().execute();
@@ -206,7 +208,7 @@ public class Sendsms extends AppCompatActivity{
                 }
                 //etext.setText(result);
                 Log.e("result:",result);
-                String delims = "[ ,:+]+";
+                String delims = "[ ,:]+";
                 String[] tokens = result.split(delims);
                 for (int i = 0; i < tokens.length; i++)
                     System.out.println(tokens[i]);
@@ -228,7 +230,7 @@ public class Sendsms extends AppCompatActivity{
                             email[count]=tokens[i];
                             break;
                         }
-                        if((tokens[i].matches("[0-9|-]+") && tokens[i].length()>=8)){
+                        if((tokens[i].matches("[+]?([0-9|-])+") && tokens[i].length()>=8)){
 
                             phone[count]=tokens[i];
                             break;
@@ -243,10 +245,11 @@ public class Sendsms extends AppCompatActivity{
             //emailAddress.setText(email);
             //phoneNumber.setText(phone);
             //fullName.setText(name);
+            String message=edit_name.getText().toString();
             Intent intent=new Intent(getApplicationContext(),Pic.class);
             PendingIntent pi=PendingIntent.getActivity(getApplicationContext(),0,intent,0);
             SmsManager sms=SmsManager.getDefault();
-            sms.sendTextMessage(phone[count],null,"Hello "+name[count]+",\nWe are Team Varrier",pi,null);
+            sms.sendTextMessage(phone[count],null,message,pi,null);
             intent1.putExtra(ContactsContract.Intents.Insert.EMAIL,email[count]);
             intent1.putExtra(ContactsContract.Intents.Insert.PHONE,phone[count]);
             intent1.putExtra(ContactsContract.Intents.Insert.NAME,name[count]);

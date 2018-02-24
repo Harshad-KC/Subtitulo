@@ -113,7 +113,7 @@ public class Pic extends AppCompatActivity{
         }
 
     public void doRecognize(){
-        etext.setText("Analyzing");
+        //etext.setText("Analyzing");
         Log.e("resul","res");
         try{
             new doRequest().execute();
@@ -185,7 +185,7 @@ public class Pic extends AppCompatActivity{
                 }
                 //etext.setText(result);
                 Log.e("result:",result);
-                String delims = "[ ,:+]+";
+                String delims = "[ ,:]+";
                 String[] tokens = result.split(delims);
                 for (int i = 0; i < tokens.length; i++)
                     System.out.println(tokens[i]);
@@ -207,7 +207,7 @@ public class Pic extends AppCompatActivity{
                             email=tokens[i];
                             break;
                         }
-                        if((tokens[i].matches("[0-9|-]+") && tokens[i].length()>=8)){
+                        if((tokens[i].matches("[+]?([0-9|-])+") && tokens[i].length()>=8)){
 
                             phone=tokens[i];
                             break;

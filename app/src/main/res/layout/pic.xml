@@ -4,6 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="#c2f3e2"
     android:layout_height="match_parent">
 
     <ImageView
@@ -16,7 +17,7 @@
     <Button
         android:id="@+id/button_image"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
+        android:layout_height="50dp"
         android:layout_above="@+id/eText"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="74dp"
@@ -26,12 +27,11 @@
     <Button
         android:id="@+id/button_image1"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
+        android:layout_height="50dp"
         android:layout_above="@+id/eText"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="48dp"
         android:onClick="move"
-        android:text="go to send!" />
+        android:text="Send SMS!" />
 
     <TextView
         android:id="@+id/eText"
