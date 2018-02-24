@@ -16,12 +16,22 @@
     <Button
         android:id="@+id/button_image"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="30dp"
         android:layout_above="@+id/eText"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="38dp"
+        android:layout_marginBottom="74dp"
         android:onClick="takePicture"
         android:text="Take a picture!" />
+
+    <Button
+        android:id="@+id/button_image1"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:layout_above="@+id/eText"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="48dp"
+        android:onClick="move"
+        android:text="go to send!" />
 
     <TextView
         android:id="@+id/eText"

@@ -1,7 +1,8 @@
 package com.example.vibhore.subtitulo;
 
-import android.Manifest;
 import android.app.PendingIntent;
+import android.telephony.SmsManager;
+import android.Manifest;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,7 +16,6 @@ import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,11 +41,19 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+
+import static android.app.Activity.RESULT_OK;
+
 /**
- * Created by vibhore on 24/2/18.
+ * Created by Souptik Kar on 24-Feb-18.
  */
 
-public class Pic extends AppCompatActivity{
+public class Sendsms extends AppCompatActivity{
+    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS =3 ;
+    String email[]=new String[3] ;
+    int flag=0;
+    String phone[]=new String[3] ;
+    String name[]=new String[3] ;
     Button takePictureButton;
     ImageView imageView;
     Uri file;
@@ -54,13 +62,15 @@ public class Pic extends AppCompatActivity{
     EditText emailAddress;
     EditText phoneNumber;
     EditText fullName;
+    int count=0;
     Intent intent1=new Intent(ContactsContract.Intents.Insert.ACTION);
-
+    //Intent intent3=new Intent(getApplicationContext(),Sendsms.class);
+    //PendingIntent pi=PendingIntent.getActivity(getApplicationContext(), 0, intent3,0);
     private VisionServiceClient client ;
     final int pic_crop=2;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.pic);
+        setContentView(R.layout.sms);
 
         if(client==null)
         {
@@ -78,15 +88,26 @@ public class Pic extends AppCompatActivity{
             ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
         }
     }
-    public void move(View view){
-        Intent intent3=new Intent(Pic.this,Sendsms.class);
-        startActivity(intent3);
-    }
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 0) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
                 takePictureButton.setEnabled(true);
+            }
+        }
+        else if(requestCode == MY_PERMISSIONS_REQUEST_SEND_SMS){
+            Log.e("Result","Coming here");
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Log.e("Result","Coming here");
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage(phone[count], null,"hello", null,null);
+                Toast.makeText(getApplicationContext(), "SMS sent.",
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "SMS faild, please try again.", Toast.LENGTH_LONG).show();
+                return;
             }
         }
     }
@@ -102,21 +123,21 @@ public class Pic extends AppCompatActivity{
             if (requestCode==100) {
                 //file=data.getData();
                 performcrop();}
-                else if(requestCode==pic_crop) {
+            else if(requestCode==pic_crop) {
                 Bundle extras=data.getExtras();
                 thePic=extras.getParcelable("data");
                 imageView.setImageBitmap(thePic);
                 doRecognize();
             }
 
-            }
         }
+    }
 
     public void doRecognize(){
         etext.setText("Analyzing");
         Log.e("resul","res");
         try{
-            new doRequest().execute();
+            new DoRequest().execute();
         }
         catch(Exception e)
         {
@@ -125,7 +146,7 @@ public class Pic extends AppCompatActivity{
 
     }
 
-    private String process() throws VisionServiceException,IOException{
+    private String process() throws VisionServiceException,IOException {
         Gson gson=new Gson();
         Log.e("resul","res");
         ByteArrayOutputStream output=new ByteArrayOutputStream();
@@ -139,10 +160,10 @@ public class Pic extends AppCompatActivity{
         return result;
     }
 
-    private class doRequest extends AsyncTask<String,String,String>{
+    private class DoRequest extends AsyncTask<String,String,String> {
         private Exception e=null ;
 
-        public doRequest(){
+        public DoRequest(){
 
         }
 
@@ -160,10 +181,10 @@ public class Pic extends AppCompatActivity{
         protected void onPostExecute(String data)
         {
             super.onPostExecute(data);
-            String email=null;
+           /* String email=null;
             int flag=0;
             String phone=null;
-            String name=null;
+            String name=null;*/
             if(e!=null){
                 etext.setText("Error:"+e.getMessage());
                 this.e=null ;
@@ -192,42 +213,46 @@ public class Pic extends AppCompatActivity{
                 if(tokens[0].equals("Dr.")||tokens[0].equals("Mr.")||tokens[0].equals("Mrs.")||tokens[0].equals("Ms."))
                 {
                     Log.e("result","Coming here1");
-                    name=tokens[1] +" " +tokens[2];
+                    name[count]=tokens[1] +" " +tokens[2];
                 }
-                 else
+                else
                 {
                     Log.e("result","Coming here");
-                    name=tokens[0] +" " +tokens[1];
+                    name[count]=tokens[0] +" " +tokens[1];
                 }
 
 
                 for(int i=0;i<tokens.length;i++){
                     for(int j=0;j<tokens[i].length();j++){
                         if(tokens[i].charAt(j)=='@'){
-                            email=tokens[i];
+                            email[count]=tokens[i];
                             break;
                         }
                         if((tokens[i].matches("[0-9|-]+") && tokens[i].length()>=8)){
 
-                            phone=tokens[i];
+                            phone[count]=tokens[i];
                             break;
 
                         }
                     }
                 }
-                Log.e("result",name + " " + phone + " " + email);
+                Log.e("result",name[count] + " " + phone[count] + " " + email[count]);
 
             }
             intent1.setType(ContactsContract.RawContacts.CONTENT_TYPE);
             //emailAddress.setText(email);
             //phoneNumber.setText(phone);
             //fullName.setText(name);
-
-            intent1.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
-            intent1.putExtra(ContactsContract.Intents.Insert.PHONE,phone);
-            intent1.putExtra(ContactsContract.Intents.Insert.NAME,name);
+            Intent intent=new Intent(getApplicationContext(),Pic.class);
+            PendingIntent pi=PendingIntent.getActivity(getApplicationContext(),0,intent,0);
+            SmsManager sms=SmsManager.getDefault();
+            sms.sendTextMessage(phone[count],null,"Hello "+name[count]+",\nWe are Team Varrier",pi,null);
+            intent1.putExtra(ContactsContract.Intents.Insert.EMAIL,email[count]);
+            intent1.putExtra(ContactsContract.Intents.Insert.PHONE,phone[count]);
+            intent1.putExtra(ContactsContract.Intents.Insert.NAME,name[count]);
             startActivity(intent1);
-
+            //sendSMSMessage();
+            count++;
 
 
         }
@@ -259,7 +284,7 @@ public class Pic extends AppCompatActivity{
             cropIntent.putExtra("outputX", 256);
             cropIntent.putExtra("outputY", 256);
             cropIntent.putExtra("return-data", true);
-           startActivityForResult(cropIntent,pic_crop);
+            startActivityForResult(cropIntent,pic_crop);
             //imageView.setImageURI(file);
         }
         catch(ActivityNotFoundException anfe){
@@ -269,5 +294,39 @@ public class Pic extends AppCompatActivity{
             toast.show();
         }
     }
+    /*protected void sendSMSMessage() {
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.SEND_SMS)) {
+            } else {
+                Log.e("Result","Coming here");
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.SEND_SMS},
+                        MY_PERMISSIONS_REQUEST_SEND_SMS);
+            }
+        }
+    }*/
+
+    /*public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_SEND_SMS: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    SmsManager smsManager = SmsManager.getDefault();
+                    smsManager.sendTextMessage(""+phone, null,"hello"+name, null,null);
+                    Toast.makeText(getApplicationContext(), "SMS sent.",
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(),
+                            "SMS faild, please try again.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        }
+
+    }*/
 
 }
