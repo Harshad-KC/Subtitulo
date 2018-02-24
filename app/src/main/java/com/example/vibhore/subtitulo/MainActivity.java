@@ -78,8 +78,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if(test==1){
-                Toast.makeText(this,"THe user exists", Toast.LENGTH_LONG).show();
-
+                //Toast.makeText(this,"THe user exists", Toast.LENGTH_LONG).show();
+                Intent i=new Intent(MainActivity.this,Pic.class);
+                startActivity(i);
             }else {
                 Toast.makeText(this,"Enter a valid username and password", Toast.LENGTH_LONG).show();
                 mUsername.setText("");
