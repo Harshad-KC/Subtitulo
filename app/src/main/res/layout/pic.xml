@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,7 +9,7 @@
     <ImageView
         android:id="@+id/imageview"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="250dp"
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/button_image"/>
 
@@ -16,10 +17,17 @@
         android:id="@+id/button_image"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/eText"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="46dp"
+        android:layout_marginBottom="38dp"
         android:onClick="takePicture"
         android:text="Take a picture!" />
+
+    <TextView
+        android:id="@+id/eText"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignStart="@+id/imageview" />
 
 </RelativeLayout>

@@ -5,18 +5,34 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Region;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.microsoft.projectoxford.vision.VisionServiceClient;
+import com.microsoft.projectoxford.vision.VisionServiceRestClient;
+import com.microsoft.projectoxford.vision.contract.LanguageCodes;
+import com.microsoft.projectoxford.vision.contract.Line;
+import com.microsoft.projectoxford.vision.contract.OCR;
+import com.microsoft.projectoxford.vision.contract.Word;
+import com.microsoft.projectoxford.vision.rest.VisionServiceException;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -30,13 +46,23 @@ public class Pic extends AppCompatActivity{
     Button takePictureButton;
     ImageView imageView;
     Uri file;
+    TextView etext ;
+    Bitmap thePic;
+    private VisionServiceClient client ;
     final int pic_crop=2;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pic);
 
+        if(client==null)
+        {
+            client=new VisionServiceRestClient(getString(R.string.sub_key),getString(R.string.sub_apiroot));
+
+        }
+
         takePictureButton = (Button) findViewById(R.id.button_image);
         imageView=(ImageView)findViewById(R.id.imageview);
+        etext=(TextView) findViewById(R.id.eText);
 
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -66,17 +92,88 @@ public class Pic extends AppCompatActivity{
                 performcrop();}
                 else if(requestCode==pic_crop) {
                 Bundle extras=data.getExtras();
-                Bitmap thePic=extras.getParcelable("data");
+                thePic=extras.getParcelable("data");
                 imageView.setImageBitmap(thePic);
+                doRecognize();
             }
-                /*try {
-                    Bitmap bitmap=MediaStore.Images.Media.getBitmap(this.getContentResolver(),file);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }*/
 
             }
         }
+
+    public void doRecognize(){
+        etext.setText("Analyzing");
+        Log.e("resul","res");
+        try{
+            new doRequest().execute();
+        }
+        catch(Exception e)
+        {
+            etext.setText("Error encountered");
+        }
+
+    }
+
+    private String process() throws VisionServiceException,IOException{
+        Gson gson=new Gson();
+        Log.e("resul","res");
+        ByteArrayOutputStream output=new ByteArrayOutputStream();
+        thePic.compress(Bitmap.CompressFormat.JPEG,100,output);
+        ByteArrayInputStream inputStream=new ByteArrayInputStream(output.toByteArray());
+
+        OCR ocr=this.client.recognizeText(inputStream, LanguageCodes.AutoDetect,true);
+
+        String result=gson.toJson(ocr);
+        Log.d("result",result);
+        return result;
+    }
+
+    private class doRequest extends AsyncTask<String,String,String>{
+        private Exception e=null ;
+
+        public doRequest(){
+
+        }
+
+        @Override
+        protected String doInBackground(String... args) {
+            try {
+                return process();
+            } catch (Exception e) {
+                this.e = e;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String data)
+        {
+            super.onPostExecute(data);
+
+            if(e!=null){
+                etext.setText("Error:"+e.getMessage());
+                this.e=null ;
+
+            }
+            else
+            {
+                Gson gson=new Gson();
+                OCR r=gson.fromJson(data,OCR.class);
+                String result="";
+                for(com.microsoft.projectoxford.vision.contract.Region reg:r.regions){
+                    for(Line line: reg.lines){
+                        for(Word word: line.words){
+                            result+=word.text+ " ";
+                        }
+                        result+="\n";
+                    }
+                    result+="\n";
+                }
+                etext.setText(result);
+            }
+        }
+
+    }
+
     private static File getOutputMediaFile(){
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "CameraDemo");
