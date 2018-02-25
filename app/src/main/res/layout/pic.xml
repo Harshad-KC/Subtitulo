@@ -20,7 +20,7 @@
         android:layout_height="50dp"
         android:layout_above="@+id/eText"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="74dp"
+        android:layout_marginBottom="94dp"
         android:onClick="takePicture"
         android:text="Take a picture!" />
 
@@ -32,6 +32,14 @@
         android:layout_centerHorizontal="true"
         android:onClick="move"
         android:text="Send SMS!" />
+    <Button
+        android:id="@+id/button_image2"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_above="@+id/button_image1"
+        android:layout_centerHorizontal="true"
+        android:onClick="movetomail"
+        android:text="Send EMAIL!" />
 
     <TextView
         android:id="@+id/eText"

@@ -1,12 +1,14 @@
 package com.example.vibhore.subtitulo;
 
+/**
+ * Created by vibhore on 25/2/18.
+ */
+
 import android.Manifest;
-import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Region;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,13 +17,12 @@ import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.telephony.SmsManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,28 +41,38 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import android.net.Uri;
+
+
 
 /**
  * Created by vibhore on 24/2/18.
  */
 
-public class Pic extends AppCompatActivity{
+public class Email extends AppCompatActivity {
     Button takePictureButton;
     ImageView imageView;
     Uri file;
     TextView etext ;
     Bitmap thePic;
+    int count=0;
+    String email[]=new String[3] ;
+    int flag=0;
+    String phone[]=new String[3] ;
+    String name[]=new String[3] ;
     EditText emailAddress;
     EditText phoneNumber;
     EditText fullName;
+    EditText edit_name;
     Intent intent1=new Intent(ContactsContract.Intents.Insert.ACTION);
 
     private VisionServiceClient client ;
     final int pic_crop=2;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.pic);
-
+        setContentView(R.layout.email);
+        Button sendbutton=(Button)findViewById(R.id.button_image1);
+        edit_name=(EditText)findViewById(R.id.edit_name);
         if(client==null)
         {
             client=new VisionServiceRestClient(getString(R.string.sub_key),getString(R.string.sub_apiroot));
@@ -77,14 +88,6 @@ public class Pic extends AppCompatActivity{
             takePictureButton.setEnabled(false);
             ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
         }
-    }
-    public void move(View view){
-        Intent intent3=new Intent(Pic.this,Sendsms.class);
-        startActivity(intent3);
-    }
-    public void movetomail(View view){
-        Intent intent4=new Intent(Pic.this,Email.class);
-        startActivity(intent4);
     }
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 0) {
@@ -106,15 +109,15 @@ public class Pic extends AppCompatActivity{
             if (requestCode==100) {
                 //file=data.getData();
                 performcrop();}
-                else if(requestCode==pic_crop) {
+            else if(requestCode==pic_crop) {
                 Bundle extras=data.getExtras();
                 thePic=extras.getParcelable("data");
                 imageView.setImageBitmap(thePic);
                 doRecognize();
             }
 
-            }
         }
+    }
 
     public void doRecognize(){
         //etext.setText("Analyzing");
@@ -129,7 +132,7 @@ public class Pic extends AppCompatActivity{
 
     }
 
-    private String process() throws VisionServiceException,IOException{
+    private String process() throws VisionServiceException,IOException {
         Gson gson=new Gson();
         Log.e("resul","res");
         ByteArrayOutputStream output=new ByteArrayOutputStream();
@@ -143,7 +146,7 @@ public class Pic extends AppCompatActivity{
         return result;
     }
 
-    private class doRequest extends AsyncTask<String,String,String>{
+    private class doRequest extends AsyncTask<String,String,String> {
         private Exception e=null ;
 
         public doRequest(){
@@ -164,10 +167,7 @@ public class Pic extends AppCompatActivity{
         protected void onPostExecute(String data)
         {
             super.onPostExecute(data);
-            String email=null;
-            int flag=0;
-            String phone=null;
-            String name=null;
+
             if(e!=null){
                 etext.setText("Error:"+e.getMessage());
                 this.e=null ;
@@ -196,41 +196,55 @@ public class Pic extends AppCompatActivity{
                 if(tokens[0].equals("Dr.")||tokens[0].equals("Mr.")||tokens[0].equals("Mrs.")||tokens[0].equals("Ms."))
                 {
                     Log.e("result","Coming here1");
-                    name=tokens[1] +" " +tokens[2];
+                    name[count]=tokens[1] +" " +tokens[2];
                 }
-                 else
+                else
                 {
                     Log.e("result","Coming here");
-                    name=tokens[0] +" " +tokens[1];
+                    name[count]=tokens[0] +" " +tokens[1];
                 }
 
 
                 for(int i=0;i<tokens.length;i++){
                     for(int j=0;j<tokens[i].length();j++){
                         if(tokens[i].charAt(j)=='@'){
-                            email=tokens[i];
+                            email[count]=tokens[i];
                             break;
                         }
                         if((tokens[i].matches("[+]?([0-9|-])+") && tokens[i].length()>=8)){
 
-                            phone=tokens[i];
+                            phone[count]=tokens[i];
                             break;
 
                         }
                     }
                 }
-                Log.e("result",name + " " + phone + " " + email);
+                Log.e("result",name[count]+ " " + phone[count] + " " + email[count]);
 
             }
             intent1.setType(ContactsContract.RawContacts.CONTENT_TYPE);
             //emailAddress.setText(email);
             //phoneNumber.setText(phone);
             //fullName.setText(name);
+            String message=edit_name.getText().toString();
+            //emailintent.setData(Uri.parse("mailto:"));
+            Intent emailintent=new Intent(Intent.ACTION_SEND);
+            emailintent.setType("message/rfc822");
+            emailintent.putExtra(Intent.EXTRA_EMAIL,new String[]{email[count]});
+            emailintent.putExtra(Intent.EXTRA_TEXT,message);
+            try{
+                startActivity(Intent.createChooser(emailintent,"send email"));
+                Log.i("email done","");
+            }
+            catch(android.content.ActivityNotFoundException ex){
+                Toast.makeText(Email.this,"not done",Toast.LENGTH_SHORT).show();
+            }
 
-            intent1.putExtra(ContactsContract.Intents.Insert.EMAIL,email);
-            intent1.putExtra(ContactsContract.Intents.Insert.PHONE,phone);
-            intent1.putExtra(ContactsContract.Intents.Insert.NAME,name);
+            intent1.putExtra(ContactsContract.Intents.Insert.EMAIL,email[count]);
+            intent1.putExtra(ContactsContract.Intents.Insert.PHONE,phone[count]);
+            intent1.putExtra(ContactsContract.Intents.Insert.NAME,name[count]);
             startActivity(intent1);
+            count++;
 
 
 
@@ -263,7 +277,7 @@ public class Pic extends AppCompatActivity{
             cropIntent.putExtra("outputX", 256);
             cropIntent.putExtra("outputY", 256);
             cropIntent.putExtra("return-data", true);
-           startActivityForResult(cropIntent,pic_crop);
+            startActivityForResult(cropIntent,pic_crop);
             //imageView.setImageURI(file);
         }
         catch(ActivityNotFoundException anfe){
